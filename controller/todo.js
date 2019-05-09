@@ -1,27 +1,27 @@
 const userModel = require('../model/user');
 const todoModel = require('../model/todo');
+const mongoose = require('mongoose');
 
+// 添加todo:userId,name,time,date,month
 async function addTodo(req, res, next) {
   try {
-    const { todos, phone } = req.body;
-    if (phone) {
-      const user = await userModel.findOne({ phone });
-      if (user) {
-        const data = await todoModel.create({ user: user._id, todo: todos });
-        res.json({
-          code: 200,
-          data
-        });
-      } else {
-        res.json({
-          code: 400,
-          msg: '用户不存在'
-        });
-      }
+    const { name, userId, time, date, month } = req.body;
+    if (userId && name && time && date && month) {
+      const data = await todoModel.create({
+        user: userId,
+        name: name,
+        time,
+        date,
+        month
+      });
+      res.json({
+        code: 200,
+        data
+      });
     } else {
       res.json({
         code: 400,
-        msg: '用户未登录'
+        msg: '缺少必要参数'
       });
     }
   } catch (err) {
@@ -29,16 +29,44 @@ async function addTodo(req, res, next) {
   }
 }
 
+// 根据用户Id获取todo及allTime
 async function getTodo(req, res, next) {
   try {
-    const data = await todoModel.find();
+    const { userId } = req.query;
+    const data = await todoModel.find({
+      user: mongoose.Types.ObjectId(userId)
+    });
+    const Time = await todoModel.aggregate([
+      {
+        $group: {
+          _id: userId,
+          allTime: {
+            $sum: '$time'
+          }
+        }
+      }
+    ]);
     res.json({
       code: 200,
-      data
+      allTodo: data,
+      allTime: Time[0].allTime
     });
   } catch (err) {
     next(err);
   }
 }
 
-module.exports = { addTodo, getTodo };
+// 获取所有的数据库所有todo
+async function getAllTodo(req, res, next) {
+  try {
+    const allTodo = await todoModel.find();
+    res.json({
+      code: 200,
+      allTodo
+    });
+  } catch (err) {
+    next(err);
+  }
+}
+
+module.exports = { addTodo, getTodo, getAllTodo };

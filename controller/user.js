@@ -2,6 +2,7 @@ const userModel = require('../model/user');
 const validator = require('validator');
 const smsCodeModel = require('../model/smsCode');
 const signTokem = require('../utils/signToken');
+const mongoose = require('mongoose');
 
 // 用户注册逻辑
 async function register(req, res, next) {
@@ -110,8 +111,7 @@ async function getUserData(req, res, next) {
     const userId = req.user.userId;
     const userData = await userModel
       .findOne({ _id: userId })
-      .select('-password')
-      .populate({ path: 'todo' });
+      .select('-password');
     res.json({
       code: 200,
       userData
@@ -120,4 +120,80 @@ async function getUserData(req, res, next) {
     next(err);
   }
 }
-module.exports = { register, login, getUserData };
+
+// 修改昵称、签名、头像
+async function changeUserMsg(req, res, next) {
+  try {
+    const userId = req.user.userId;
+    const body = req.body; // {"nickname": "霸王别姬"}
+    const keys = Object.keys(body); // ["nickname"]
+    const key = keys[0]; // "nickname"
+    const changeMsg = body[key]; // "霸王"
+    if (userId) {
+      if (key === 'password') {
+        res.json({
+          code: 200,
+          msg: '密码不能通过修改个人信息接口修改'
+        });
+        return;
+      }
+      const userdata = await userModel.update(
+        { _id: userId },
+        { $set: { [key]: changeMsg } }
+      );
+      res.json({
+        code: 200,
+        msg: `${key}修改成功`,
+        userdata
+      });
+    } else {
+      res.json({
+        code: 400,
+        msg: '用户未登录'
+      });
+    }
+  } catch (err) {
+    next(err);
+  }
+}
+
+// 修改密码
+async function changePassword(req, res, next) {
+  try {
+    const userId = req.user.userId;
+    const { password, changePassword } = req.body;
+    if (userId) {
+      const userData = await userModel.findById(
+        mongoose.Types.ObjectId(userId)
+      );
+      if (userData.password === password) {
+        await userData.$set({ password: changePassword });
+        await userData.save();
+        res.json({
+          code: 200,
+          msg: '密码修改成功'
+        });
+      } else {
+        res.json({
+          code: 400,
+          msg: '原密码不正确'
+        });
+      }
+    } else {
+      res.json({
+        code: 400,
+        msg: '用户未登录'
+      });
+    }
+  } catch (err) {
+    next(err);
+  }
+}
+
+module.exports = {
+  register,
+  login,
+  getUserData,
+  changeUserMsg,
+  changePassword
+};

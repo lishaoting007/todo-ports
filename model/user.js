@@ -2,18 +2,14 @@ const mongoose = require('mongoose');
 
 const user = new mongoose.Schema(
   {
-    avator: {
+    avatar: {
       type: String,
       default: ''
     },
     phone: String,
     password: String,
     nickName: String,
-    desc: String,
-    todo: {
-      type: mongoose.SchemaTypes.ObjectId,
-      ref: 'todo'
-    }
+    desc: String
   },
   {
     versionKey: false,

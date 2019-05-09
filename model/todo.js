@@ -3,17 +3,15 @@ const mongoose = require('mongoose');
 const todo = new mongoose.Schema(
   {
     user: {
-      type: mongoose.SchemaTypes.ObjectId,
-      ref: 'user'
+      type: mongoose.SchemaTypes.ObjectId
     },
-    todo: String
+    name: String,
+    time: Number,
+    date: String,
+    month: String
   },
   {
-    versionKey: false,
-    timestamps: {
-      createdAt: 'createTime',
-      updatedAt: 'updateTime'
-    }
+    versionKey: false
   }
 );
 
