@@ -1,41 +1,41 @@
 const todoModel = require('../model/todo');
-const userModel = require('../model/user');
-const mongoose = require('mongoose');
 
 async function getRanking(req, res, next) {
   try {
-    const userData = await userModel.find().select('nickName desc');
-    let arr = [];
-    for (let i = 0; i < userData.length; i++) {
-      const id = mongoose.Types.ObjectId(userData[i]._id);
-      const Time = await todoModel.aggregate([
-        {
-          $match: {
-            user: id
-          }
-        },
-        {
-          $group: {
-            _id: '$user',
-            allTime: {
-              $sum: '$time'
-            }
-          }
-        },
-        {
-          $project: {
-            _id: 0
+    const ranking = await todoModel.aggregate([
+      {
+        $group: {
+          _id: '$user',
+          allTime: {
+            $sum: '$time'
           }
         }
-      ]);
+      },
+      {
+        $sort: {
+          allTime: -1
+        }
+      },
+      {
+        $lookup: {
+          from: 'users',
+          localField: '_id',
+          foreignField: '_id',
+          as: 'userData'
+        }
+      }
+    ]);
 
-      arr.push(Time);
+    for (let i = 0; i < ranking.length; i++) {
+      delete ranking[i].userData[0].password;
+      delete ranking[i].userData[0].updateTime;
+      delete ranking[i].userData[0].createTime;
+      delete ranking[i].userData[0].avatar;
     }
 
     res.json({
       code: 200,
-      userData,
-      arr
+      ranking
     });
   } catch (err) {
     next(err);
