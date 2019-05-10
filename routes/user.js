@@ -5,7 +5,8 @@ const {
   login,
   getUserData,
   changeUserMsg,
-  changePassword
+  changePassword,
+  getAllUser
 } = require('../controller/user');
 const auth = require('../controller/auth');
 
@@ -14,5 +15,6 @@ router.post('/login', login);
 router.get('/', auth, getUserData);
 router.put('/', auth, changeUserMsg);
 router.post('/changePassword', auth, changePassword);
+router.get('/all', getAllUser);
 
 module.exports = router;

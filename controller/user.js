@@ -190,10 +190,25 @@ async function changePassword(req, res, next) {
   }
 }
 
+// 获取所有用户
+async function getAllUser(req, res, next) {
+  try {
+    const data = await userModel.find();
+    // .select('-password crateTime updateTime');
+    res.json({
+      code: 200,
+      data
+    });
+  } catch (err) {
+    next(err);
+  }
+}
+
 module.exports = {
   register,
   login,
   getUserData,
   changeUserMsg,
-  changePassword
+  changePassword,
+  getAllUser
 };

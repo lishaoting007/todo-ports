@@ -33,16 +33,27 @@ async function addTodo(req, res, next) {
 async function getTodo(req, res, next) {
   try {
     const { userId } = req.query;
+    const id = mongoose.Types.ObjectId(userId);
     const data = await todoModel.find({
-      user: mongoose.Types.ObjectId(userId)
+      user: id
     });
     const Time = await todoModel.aggregate([
       {
+        $match: {
+          user: id
+        }
+      },
+      {
         $group: {
-          _id: userId,
+          _id: '$user',
           allTime: {
             $sum: '$time'
           }
+        }
+      },
+      {
+        $project: {
+          _id: 0
         }
       }
     ]);
