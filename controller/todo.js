@@ -32,7 +32,7 @@ async function addTodo(req, res, next) {
 // 根据用户Id获取todo及allTime
 async function getTodo(req, res, next) {
   try {
-    const { userId } = req.query;
+    const { userId } = req.params;
     const id = mongoose.Types.ObjectId(userId);
     const data = await todoModel.find({
       user: id

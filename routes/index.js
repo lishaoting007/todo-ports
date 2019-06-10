@@ -1,6 +1,6 @@
 const { Router } = require('express');
 const router = Router();
-const userRoutes = require('../routes/user');
+const userRoutes = require('./user');
 const smsCodeRoutes = require('./smsCode');
 const todoRoutes = require('./todo');
 const rankingRoutes = require('./ranking');
